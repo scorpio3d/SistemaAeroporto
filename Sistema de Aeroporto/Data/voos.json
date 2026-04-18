@@ -1,0 +1,42 @@
+[
+  {
+    "numero_voo": "TP1202",
+    "origem": "Lisboa (LIS)",
+    "destino": "Funchal (FNC)",
+    "capacidade": 180,
+    "estado": "Confirmado",
+    "passageiros": [ "João Silva", "Maria Santos" ]
+  },
+  {
+    "numero_voo": "FR4512",
+    "origem": "Porto (OPO)",
+    "destino": "Londres (STN)",
+    "capacidade": 150,
+    "estado": "Embarque",
+    "passageiros": [ "Alice Costa", "Pedro Rocha", "Rita Mendes" ]
+  },
+  {
+    "numero_voo": "AZ404",
+    "origem": "Roma (FCO)",
+    "destino": "Lisboa (LIS)",
+    "capacidade": 120,
+    "estado": "Atrasado",
+    "passageiros": []
+  },
+  {
+    "numero_voo": "DL101",
+    "origem": "Nova Iorque (JFK)",
+    "destino": "Porto (OPO)",
+    "capacidade": 250,
+    "estado": "Programado",
+    "passageiros": [ "Carlos Pereira" ]
+  },
+  {
+    "numero_voo": "LX2081",
+    "origem": "Zurique (ZRH)",
+    "destino": "Lisboa (LIS)",
+    "capacidade": 2,
+    "estado": "Lotado",
+    "passageiros": [ "Hugo Ferreira", "Sónia Vaz" ]
+  }
+]
