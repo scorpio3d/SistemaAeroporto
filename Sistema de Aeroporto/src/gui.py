@@ -4,7 +4,7 @@ from database import (
     inicializar_bd, obter_voos, adicionar_voo_db, 
     obter_aeroportos, obter_avioes, adicionar_passageiro_db, 
     obter_companhias, obter_rotas, adicionar_rota_db, 
-    rota_existe, atualizar_estado_voo_db
+    rota_existe, atualizar_estado_voo_db, obter_passageiros_voo
 )
 
 # Configurações de tema
@@ -42,6 +42,31 @@ class AeroportoApp(ctk.CTk):
         ctk.CTkButton(frame, text="🛠️ Entrar como Administrador", fg_color="#d35400", hover_color="#e67e22", 
                       command=lambda: self.iniciar_app("admin"), width=250, height=45).pack(pady=10)
 
+    def setup_passageiros(self):
+        # Limpa a aba para evitar duplicados se a função for chamada novamente
+        for w in self.tab_passageiros.winfo_children(): w.destroy()
+        
+        ctk.CTkLabel(self.tab_passageiros, text="MANIFESTO DE PASSAGEIROS", 
+                     font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
+        
+        # Obter lista de voos para colocar na seleção
+        voos = obter_voos()
+        opcoes_voos = [f"{v['numero_rota']}-{v['voo_id']} ({v['origem_sigla']}➔{v['destino_sigla']})" for v in voos]
+        
+        frame_selecao = ctk.CTkFrame(self.tab_passageiros, fg_color="transparent")
+        frame_selecao.pack(fill="x", padx=20, pady=5)
+        
+        ctk.CTkLabel(frame_selecao, text="Selecione o Voo:").pack(side="left", padx=10)
+        
+        # Criar a ComboBox. Quando o utilizador escolhe um voo, chama a função 'listar_passageiros_gui'
+        self.cb_voo_pass = ctk.CTkComboBox(frame_selecao, values=opcoes_voos, width=350, 
+                                            command=self.listar_passageiros_gui)
+        self.cb_voo_pass.pack(side="left", padx=10)
+        
+        # Área com scroll onde os nomes vão aparecer
+        self.scroll_pass = ctk.CTkScrollableFrame(self.tab_passageiros, height=400)
+        self.scroll_pass.pack(fill="both", expand=True, padx=20, pady=10)
+
     # --- INTERFACE PRINCIPAL ---
     def iniciar_app(self, perfil):
         self.limpar_janela()
@@ -59,6 +84,8 @@ class AeroportoApp(ctk.CTk):
             self.tab_rotas = self.tab_view.add("🗺️ Gestão de Rotas")
             self.tab_agendar = self.tab_view.add("➕ Agendar Voo")
             self.tab_estados = self.tab_view.add("🔄 Estados")
+            self.tab_passageiros = self.tab_view.add("👥 Passageiros")
+            self.setup_passageiros()
             self.setup_gestao_rotas()
             self.setup_agendar_voo()
             self.setup_gestao_estados()
@@ -98,20 +125,21 @@ class AeroportoApp(ctk.CTk):
         self.atualizar_painel()
 
     def atualizar_painel(self):
-        # Limpar painel
-        for w in self.scroll_painel.winfo_children(): w.destroy()
+        # Limpar o painel antes de recarregar
+        for w in self.scroll_painel.winfo_children(): 
+            w.destroy()
         
         voos = obter_voos()
         criterio = self.menu_ordem.get()
 
-        # Lógica de ordenação dinâmica
+        # Lógica de ordenação (mantida do passo anterior)
         if criterio == "Destino":
             voos.sort(key=lambda x: x['destino_cidade'])
         elif criterio == "Estado":
             voos.sort(key=lambda x: x['estado'])
         elif criterio == "Rota":
             voos.sort(key=lambda x: x['numero_rota'])
-        else: # Data/Hora
+        else: # Ordenação por Data/Hora
             voos.sort(key=lambda x: x['data_hora'])
 
         for v in voos:
@@ -121,10 +149,17 @@ class AeroportoApp(ctk.CTk):
             codigo = f"{v['numero_rota']}-{v['voo_id']}"
             cor_estado = "orange" if v['estado'] == "Atrasado" else "green" if v['estado'] == "Concluído" else "gray"
             
+            # Linha 0: Identificador do Voo e a Hora
             ctk.CTkLabel(f, text=f"VOO {codigo}", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=10, sticky="w")
             ctk.CTkLabel(f, text=f"🕒 {v['data_hora']}", text_color="#3b8ed0").grid(row=0, column=1, padx=10, sticky="w")
+            
+            # Linha 1: Trajeto e Estado atual
             ctk.CTkLabel(f, text=f"{v['origem_cidade']} ➔ {v['destino_cidade']}").grid(row=1, column=0, padx=10, sticky="w")
             ctk.CTkLabel(f, text=v['estado'], text_color=cor_estado, font=ctk.CTkFont(weight="bold")).grid(row=1, column=1, padx=10, sticky="e")
+            
+            # --- LINHA CORRIGIDA (Linha 2): Avião e Lotação ---
+            texto_lotacao = f"Avião: {v['aviao_modelo']} | Lotação: {v['total_passageiros']}/{v['capacidade']}"
+            ctk.CTkLabel(f, text=texto_lotacao, font=ctk.CTkFont(size=11)).grid(row=2, column=0, columnspan=2, padx=10, sticky="w")
    
            # --- ABA: RESERVAR ---
     def setup_reservar_bilhete(self):
@@ -220,7 +255,31 @@ class AeroportoApp(ctk.CTk):
             self.atualizar_painel()
         except:
             messagebox.showerror("Erro", "ID inválido.")
+    def listar_passageiros_gui(self, _=None):
+        # Limpa a lista atual de nomes antes de mostrar os novos
+        for w in self.scroll_pass.winfo_children(): w.destroy()
+        
+        try:
+            # Lógica para extrair o ID: "TP102-5 (LIS➔OPO)" -> pegamos no "5"
+            texto_selecionado = self.cb_voo_pass.get()
+            voo_id = int(texto_selecionado.split("-")[1].split(" ")[0])
+            
+            # Chama a função que criámos no database.py
+            passageiros = obter_passageiros_voo(voo_id)
+            
+            if not passageiros:
+                ctk.CTkLabel(self.scroll_pass, text="Nenhum passageiro registado neste voo.",
+                             text_color="gray").pack(pady=20)
+                return
 
+            # Cria uma linha para cada passageiro
+            for i, p in enumerate(passageiros, 1):
+                f = ctk.CTkFrame(self.scroll_pass)
+                f.pack(fill="x", padx=5, pady=2)
+                ctk.CTkLabel(f, text=f"{i:02d}. {p['nome']}", 
+                             font=ctk.CTkFont(size=13)).pack(side="left", padx=15, pady=5)
+        except Exception as e:
+            print(f"Erro ao listar: {e}")
 if __name__ == "__main__":
     app = AeroportoApp()
     app.mainloop()

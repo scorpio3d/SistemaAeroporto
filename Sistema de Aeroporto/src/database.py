@@ -185,6 +185,14 @@ def obter_voos():
     resultado = cursor.fetchall()
     conn.close()
     return [dict(r) for r in resultado]
+        # Manifesto passageiros
+def obter_passageiros_voo(voo_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT nome FROM passageiros WHERE voo_id = ? ORDER BY nome", (voo_id,))
+    resultado = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in resultado]
 
 def voo_existe(numero_voo):
     conn = conectar()

@@ -2,7 +2,7 @@ import sys
 from database import (
     inicializar_bd, obter_voos, adicionar_voo_db, voo_existe, 
     obter_aeroportos, obter_avioes, adicionar_passageiro_db, 
-    obter_companhias, obter_rotas, adicionar_rota_db, rota_existe, atualizar_estado_voo_db
+    obter_companhias, obter_rotas, adicionar_rota_db, rota_existe, atualizar_estado_voo_db, obter_passageiros_voo
 )
 
 # ==========================================
@@ -39,9 +39,16 @@ def listar_voos_ui():
         return
 
     for v in voos:
+        # Recuperar os valores da lotação
+        lugar_ocupados = v.get('total_passageiros', 0)
+        cap = v.get('capacidade', 0)
+        
         codigo_visual = f"{v['numero_rota']}-{v['voo_id']}"
+        
         print(f" VOO: {codigo_visual} | DATA/HORA: {v['data_hora']}") 
         print(f" Rota: {v['origem_cidade']} ➔ {v['destino_cidade']} | Estado: {v['estado']}")
+        # --- LINHA RESTAURADA ---
+        print(f" Avião: {v['aviao_modelo']} | Lotação: {lugar_ocupados}/{cap}")
         print("-" * 65)
 
 def listar_rotas_ui():
@@ -52,6 +59,22 @@ def listar_rotas_ui():
         return
     for r in rotas:
         print(f" [{r['numero_rota']}] {r['companhia_nome']}: {r['origem_cidade']} ➔ {r['destino_cidade']}")
+
+def listar_passageiros_ui():
+    listar_voos_ui()
+    try:
+        v_id = int(input("\nDigite o ID do voo para ver a lista de passageiros: "))
+        passageiros = obter_passageiros_voo(v_id)
+        
+        print(f"\n--- 👥 PASSAGEIROS DO VOO ID {v_id} ---")
+        if not passageiros:
+            print("Nenhum passageiro encontrado.")
+        else:
+            for i, p in enumerate(passageiros, 1):
+                print(f"{i}. {p['nome']}")
+        print("-" * 30)
+    except ValueError:
+        print("❌ ID Inválido.")
 
 def selecionar_rota():
     rotas = obter_rotas()
@@ -211,7 +234,8 @@ def menu_admin():
         print("3. Listar Rotas")
         print("4. Listar Voos")
         print("5. Alterar Estado de um Voo")
-        print("6. Voltar")
+        print("6. Ver Passageiros por Voo")
+        print("7. Voltar")
         
         op = input("Opção: ")
         
@@ -227,6 +251,8 @@ def menu_admin():
             case "5":
                 mudar_estado_voo_ui()
             case "6":
+                listar_passageiros_ui()
+            case "7":
                 break
             case _:
                 print("⚠️ Opção inválida! Tente novamente.")
