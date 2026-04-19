@@ -197,12 +197,22 @@ def menu_admin():
         print("6. Voltar")
         
         op = input("Opção: ")
-        if op == "1": adicionar_rota_ui()
-        elif op == "2": adicionar_voo_ui()
-        elif op == "3": listar_rotas_ui()
-        elif op == "4": listar_voos_ui()
-        elif op == "5": mudar_estado_voo_ui() 
-        elif op == "6": break
+        
+        match op:
+            case "1":
+                adicionar_rota_ui()
+            case "2":
+                adicionar_voo_ui()
+            case "3":
+                listar_rotas_ui()
+            case "4":
+                listar_voos_ui()
+            case "5":
+                mudar_estado_voo_ui()
+            case "6":
+                break
+            case _:
+                print("⚠️ Opção inválida! Tente novamente.")
 
 def menu_utilizador():
     while True:
@@ -212,9 +222,16 @@ def menu_utilizador():
         print("3. Voltar")
         
         op = input("Opção: ")
-        if op == "1": listar_voos_ui()
-        elif op == "2": comprar_bilhete_ui()
-        elif op == "3": break
+        
+        match op:
+            case "1":
+                listar_voos_ui()
+            case "2":
+                comprar_bilhete_ui()
+            case "3":
+                break
+            case _:
+                print("⚠️ Opção inválida! Tente novamente.")
 
 def menu_principal():
     inicializar_bd()
@@ -223,10 +240,19 @@ def menu_principal():
         print("1. Administrador")
         print("2. Passageiro")
         print("3. Sair")
+        
         op = input("Perfil: ")
-        if op == "1": menu_admin()
-        elif op == "2": menu_utilizador()
-        elif op == "3": sys.exit(0)
+        
+        match op:
+            case "1":
+                menu_admin()
+            case "2":
+                menu_utilizador()
+            case "3":
+                print("A encerrar o sistema...")
+                sys.exit(0)
+            case _:
+                print("⚠️ Perfil inexistente!")
 
 if __name__ == "__main__":
     menu_principal()
