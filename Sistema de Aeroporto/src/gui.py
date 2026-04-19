@@ -72,19 +72,48 @@ class AeroportoApp(ctk.CTk):
     # --- ABA: PAINEL DE VOOS ---
     def setup_painel_voos(self):
         self.tab_painel.grid_columnconfigure(0, weight=1)
-        self.tab_painel.grid_rowconfigure(1, weight=1)
+        self.tab_painel.grid_rowconfigure(2, weight=1) # O scroll fica na linha 2
         
-        ctk.CTkLabel(self.tab_painel, text="MOVIMENTOS AEROPORTUÁRIOS", font=ctk.CTkFont(size=20, weight="bold")).grid(row=0, column=0, pady=10)
+        ctk.CTkLabel(self.tab_painel, text="MOVIMENTOS AEROPORTUÁRIOS", 
+                     font=ctk.CTkFont(size=20, weight="bold")).grid(row=0, column=0, pady=10)
         
+        # --- NOVO: Menu de Ordenação ---
+        frame_filtros = ctk.CTkFrame(self.tab_painel, fg_color="transparent")
+        frame_filtros.grid(row=1, column=0, sticky="ew", padx=20)
+        
+        ctk.CTkLabel(frame_filtros, text="Ordenar por:").pack(side="left", padx=10)
+        
+        self.menu_ordem = ctk.CTkOptionMenu(frame_filtros, 
+                                            values=["Data/Hora", "Destino", "Estado", "Rota"],
+                                            command=lambda _: self.atualizar_painel()) # Atualiza ao clicar
+        self.menu_ordem.pack(side="left", padx=10)
+        
+        # Botão de refresh manual ao lado
+        ctk.CTkButton(frame_filtros, text="🔄", width=40, command=self.atualizar_painel).pack(side="right", padx=10)
+
+        # Scrollable Frame
         self.scroll_painel = ctk.CTkScrollableFrame(self.tab_painel)
-        self.scroll_painel.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        self.scroll_painel.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
         
-        ctk.CTkButton(self.tab_painel, text="🔄 Atualizar Painel", command=self.atualizar_painel).grid(row=2, column=0, pady=10)
         self.atualizar_painel()
 
     def atualizar_painel(self):
+        # Limpar painel
         for w in self.scroll_painel.winfo_children(): w.destroy()
+        
         voos = obter_voos()
+        criterio = self.menu_ordem.get()
+
+        # Lógica de ordenação dinâmica
+        if criterio == "Destino":
+            voos.sort(key=lambda x: x['destino_cidade'])
+        elif criterio == "Estado":
+            voos.sort(key=lambda x: x['estado'])
+        elif criterio == "Rota":
+            voos.sort(key=lambda x: x['numero_rota'])
+        else: # Data/Hora
+            voos.sort(key=lambda x: x['data_hora'])
+
         for v in voos:
             f = ctk.CTkFrame(self.scroll_painel)
             f.pack(fill="x", padx=5, pady=5)
@@ -93,11 +122,11 @@ class AeroportoApp(ctk.CTk):
             cor_estado = "orange" if v['estado'] == "Atrasado" else "green" if v['estado'] == "Concluído" else "gray"
             
             ctk.CTkLabel(f, text=f"VOO {codigo}", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=10, sticky="w")
-            ctk.CTkLabel(f, text=f"{v['origem_cidade']} ({v['origem_sigla']}) ➔ {v['destino_cidade']} ({v['destino_sigla']})").grid(row=0, column=1, padx=20, sticky="w")
-            ctk.CTkLabel(f, text=v['estado'], text_color=cor_estado).grid(row=0, column=2, padx=10, sticky="e")
-            ctk.CTkLabel(f, text=f"Ocupação: {v['total_passageiros']}/{v['capacidade']}", font=ctk.CTkFont(size=11)).grid(row=1, column=0, columnspan=3, padx=10, sticky="w")
-
-    # --- ABA: RESERVAR ---
+            ctk.CTkLabel(f, text=f"🕒 {v['data_hora']}", text_color="#3b8ed0").grid(row=0, column=1, padx=10, sticky="w")
+            ctk.CTkLabel(f, text=f"{v['origem_cidade']} ➔ {v['destino_cidade']}").grid(row=1, column=0, padx=10, sticky="w")
+            ctk.CTkLabel(f, text=v['estado'], text_color=cor_estado, font=ctk.CTkFont(weight="bold")).grid(row=1, column=1, padx=10, sticky="e")
+   
+           # --- ABA: RESERVAR ---
     def setup_reservar_bilhete(self):
         ctk.CTkLabel(self.tab_reserva, text="RESERVA DE BILHETE", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
         self.ent_voo_id = ctk.CTkEntry(self.tab_reserva, placeholder_text="ID do Voo (ex: 5)", width=300); self.ent_voo_id.pack(pady=10)

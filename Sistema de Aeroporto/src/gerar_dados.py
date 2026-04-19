@@ -1,4 +1,5 @@
 import random
+from datetime import datetime, timedelta  # <--- NOVA IMPORTAÇÃO
 from database import (
     inicializar_bd, obter_aeroportos, obter_avioes, obter_companhias,
     adicionar_rota_db, rota_existe, adicionar_voo_db, adicionar_passageiro_db, obter_voos
@@ -41,11 +42,14 @@ def gerar_dados_teste(qtd_rotas=10, qtd_voos=25, qtd_passageiros=50):
         print(f"  ✅ Rota criada: {numero_rota} ({origem} ➔ {destino})")
 
     # ---------------------------------------------------------
-    # 3. GERAR VOOS (SEM PRECISAR DE NÚMERO DE VOO)
+    # 3. GERAR VOOS (AGORA COM DATA E HORA)
     # ---------------------------------------------------------
     print(f"\n🛫 A AGENDAR {qtd_voos} VOOS...")
     estados = ["Programado", "Embarque", "Atrasado", "Concluído", "Cancelado"]
     pesos = [50, 20, 10, 15, 5] 
+    
+    # Vamos usar o dia de hoje/agora como ponto de partida
+    data_base = datetime.now()
     
     # Podemos usar um simples ciclo 'for' porque o AUTOINCREMENT 
     # garante que não há erros de colisão de IDs
@@ -54,9 +58,17 @@ def gerar_dados_teste(qtd_rotas=10, qtd_voos=25, qtd_passageiros=50):
         aviao = random.choice(avioes)
         estado = random.choices(estados, weights=pesos, k=1)[0]
         
+        # --- LÓGICA DE DATA E HORA ---
+        # Sorteia um número de minutos entre 0 e os próximos 7 dias (7 * 24h * 60m)
+        minutos_aleatorios = random.randint(0, 7 * 24 * 60)
+        data_voo = data_base + timedelta(minutes=minutos_aleatorios)
+        # Formata a data para a base de dados (ex: "2026-04-22 14:30")
+        data_hora_str = data_voo.strftime("%Y-%m-%d %H:%M")
+        # -----------------------------
+        
         # A Base de Dados trata de atribuir o ID sozinha
-        adicionar_voo_db(rota, aviao, estado)
-        print(f"  ✅ Voo agendado para a rota {rota} ({estado})")
+        adicionar_voo_db(rota, aviao, data_hora_str, estado)
+        print(f"  ✅ Voo agendado para a rota {rota} às {data_hora_str} ({estado})")
 
     # ---------------------------------------------------------
     # 4. GERAR PASSAGEIROS (USANDO O ID REAL)

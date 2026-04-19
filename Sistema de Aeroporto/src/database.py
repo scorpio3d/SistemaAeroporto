@@ -52,12 +52,13 @@ def inicializar_bd():
         )
     ''')
     
-    # 5. Tabela de Voos 
+# 5. Tabela de Voos (COM DATA E HORA)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS voos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             numero_rota TEXT NOT NULL,
             aviao_modelo TEXT NOT NULL,
+            data_hora TEXT NOT NULL,
             estado TEXT NOT NULL,
             FOREIGN KEY (numero_rota) REFERENCES rotas (numero_rota),
             FOREIGN KEY (aviao_modelo) REFERENCES avioes (modelo)
@@ -165,7 +166,7 @@ def obter_voos():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT v.id as voo_id, v.estado, v.aviao_modelo,
+        SELECT v.id as voo_id, v.estado, v.aviao_modelo, v.data_hora,
                r.numero_rota, c.nome as companhia_nome,
                a.capacidade,
                o.nome as origem_nome, o.sigla as origem_sigla, o.cidade as origem_cidade,
@@ -179,7 +180,8 @@ def obter_voos():
         JOIN avioes a ON v.aviao_modelo = a.modelo
         LEFT JOIN passageiros p ON v.id = p.voo_id
         GROUP BY v.id
-    ''')  # A correção está na linha do LEFT JOIN acima (v.id em vez de v.voo_id)
+        ORDER BY v.data_hora ASC
+    ''') # Adicionei também o ORDER BY no final para organizar cronologicamente!
     resultado = cursor.fetchall()
     conn.close()
     return [dict(r) for r in resultado]
@@ -192,13 +194,13 @@ def voo_existe(numero_voo):
     conn.close()
     return existe
 
-def adicionar_voo_db(numero_rota, aviao_modelo, estado="Programado"):
+def adicionar_voo_db(numero_rota, aviao_modelo, data_hora, estado="Programado"):
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO voos (numero_rota, aviao_modelo, estado)
-        VALUES (?, ?, ?)
-    ''', (numero_rota, aviao_modelo, estado))
+        INSERT INTO voos (numero_rota, aviao_modelo, data_hora, estado)
+        VALUES (?, ?, ?, ?)
+    ''', (numero_rota, aviao_modelo, data_hora, estado))
     conn.commit()
     conn.close()
 

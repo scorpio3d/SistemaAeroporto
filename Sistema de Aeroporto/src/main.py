@@ -11,25 +11,38 @@ from database import (
 
 def listar_voos_ui():
     voos = obter_voos()
-    print("\n" + "="*60)
-    print(" 🛫 PAINEL DE VOOS (INSTÂNCIAS REAIS) 🛬")
-    print("="*60)
+    
+    print("\n--- ⚖️ OPÇÕES DE ORDENAÇÃO ---")
+    print("1. Por Data/Hora (Padrão)")
+    print("2. Por Destino")
+    print("3. Por Estado")
+    print("4. Por Rota")
+    
+    escolha = input("Escolha como ordenar (Enter para padrão): ")
+    
+    # Lógica de ordenação em Python
+    if escolha == "2":
+        voos.sort(key=lambda x: x['destino_cidade'])
+    elif escolha == "3":
+        voos.sort(key=lambda x: x['estado'])
+    elif escolha == "4":
+        voos.sort(key=lambda x: x['numero_rota'])
+    else:
+        voos.sort(key=lambda x: x['data_hora'])
+
+    print("\n" + "="*65)
+    print(" 🛫 PAINEL DE VOOS 🛬")
+    print("="*65)
     
     if not voos:
-        print(" Não há voos agendados no momento.")
+        print(" Não há voos agendados.")
         return
 
     for v in voos:
-        lugar_ocupados = v.get('total_passageiros', 0)
-        cap = v.get('capacidade', 0)
-        
-        # O identificador único agora é visualmente construído: ROTA-ID (ex: TP102-14)
         codigo_visual = f"{v['numero_rota']}-{v['voo_id']}"
-        
-        print(f" VOO: {codigo_visual} | Companhia: {v['companhia_nome']}")
-        print(f" Trajeto: {v['origem_cidade']} ({v['origem_sigla']}) ➔ {v['destino_cidade']} ({v['destino_sigla']})")
-        print(f" Estado:  {v['estado']} | Avião: {v['aviao_modelo']} | Lotação: {lugar_ocupados}/{cap}")
-        print("-" * 60)
+        print(f" VOO: {codigo_visual} | DATA/HORA: {v['data_hora']}") 
+        print(f" Rota: {v['origem_cidade']} ➔ {v['destino_cidade']} | Estado: {v['estado']}")
+        print("-" * 65)
 
 def listar_rotas_ui():
     rotas = obter_rotas()
@@ -109,12 +122,16 @@ def adicionar_voo_ui():
     
     rota = selecionar_rota()
     if not rota: return
+    
+    # Nova pergunta para o administrador:
+    data_hora = input("Introduza a Data e Hora (AAAA-MM-DD HH:MM): ").strip()
+    if not data_hora:
+        data_hora = "2026-01-01 00:00" # Valor por defeito se ficar vazio
 
     aviao = selecionar_aviao()
     
-    # Inserimos na BD sem passar nenhum ID, o SQLite usa o AUTOINCREMENT
-    adicionar_voo_db(rota, aviao)
-    print(f"\n✅ SUCESSO: Voo agendado para a rota {rota} com um {aviao}!")
+    adicionar_voo_db(rota, aviao, data_hora) # Passamos a data_hora aqui
+    print(f"\n✅ SUCESSO: Voo agendado para {data_hora}!")
 
 # ==========================================
 # LÓGICA DE PASSAGEIRO
