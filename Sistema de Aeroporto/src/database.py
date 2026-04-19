@@ -14,7 +14,15 @@ def inicializar_bd():
     conn = conectar()
     cursor = conn.cursor()
     
-    # 1. Tabela de Aeroportos
+    # 1. Tabela de Companhias Aéreas
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS companhias (
+            sigla TEXT PRIMARY KEY,
+            nome TEXT NOT NULL
+        )
+    ''')
+    
+    # 2. Tabela de Aeroportos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS aeroportos (
             sigla TEXT PRIMARY KEY,
@@ -23,105 +31,158 @@ def inicializar_bd():
         )
     ''')
     
-    # 2. Tabela de Aviões (NOVA)
+    # 3. Tabela de Aviões
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS avioes (
             modelo TEXT PRIMARY KEY,
             capacidade INTEGER NOT NULL
         )
     ''')
-    
-    # 3. Tabela de Voos (Agora usa o modelo do avião em vez da capacidade manual)
+
+    # 4. Tabela de Rotas (NOVA - Define o trajeto genérico, ex: TP102 de LIS para OPO)
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS voos (
-            numero_voo TEXT PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS rotas (
+            numero_rota TEXT PRIMARY KEY,
+            companhia_sigla TEXT NOT NULL,
             origem_sigla TEXT NOT NULL,
             destino_sigla TEXT NOT NULL,
+            FOREIGN KEY (companhia_sigla) REFERENCES companhias (sigla),
+            FOREIGN KEY (origem_sigla) REFERENCES aeroportos (sigla),
+            FOREIGN KEY (destino_sigla) REFERENCES aeroportos (sigla)
+        )
+    ''')
+    
+    # 5. Tabela de Voos 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS voos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            numero_rota TEXT NOT NULL,
             aviao_modelo TEXT NOT NULL,
             estado TEXT NOT NULL,
-            FOREIGN KEY (origem_sigla) REFERENCES aeroportos (sigla),
-            FOREIGN KEY (destino_sigla) REFERENCES aeroportos (sigla),
+            FOREIGN KEY (numero_rota) REFERENCES rotas (numero_rota),
             FOREIGN KEY (aviao_modelo) REFERENCES avioes (modelo)
         )
     ''')
     
-    # 4. Tabela de Passageiros
+    # 6. Tabela de Passageiros
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS passageiros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            voo_numero TEXT NOT NULL,
+            voo_id INTEGER NOT NULL,
             nome TEXT NOT NULL,
-            FOREIGN KEY (voo_numero) REFERENCES voos (numero_voo)
+            FOREIGN KEY (voo_id) REFERENCES voos (id)
         )
     ''')
+
+    # Inserir dados pré-definidos caso as tabelas estejam vazias
+    cursor.execute("SELECT COUNT(*) FROM companhias")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", [
+            ('TP', 'TAP Air Portugal'), ('FR', 'Ryanair'),
+            ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
+        ])
     
-    # Inserir aeroportos iniciais
     cursor.execute("SELECT COUNT(*) FROM aeroportos")
     if cursor.fetchone()[0] == 0:
-        aeroportos_iniciais = [
-            ('LIS', 'Humberto Delgado', 'Lisboa'),
-            ('OPO', 'Francisco Sá Carneiro', 'Porto'),
-            ('FNC', 'Cristiano Ronaldo', 'Funchal'),
-            ('FAO', 'Gago Coutinho', 'Faro'),
+        cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", [
+            ('LIS', 'Humberto Delgado', 'Lisboa'), ('OPO', 'Francisco Sá Carneiro', 'Porto'),
+            ('FNC', 'Cristiano Ronaldo', 'Funchal'), ('FAO', 'Gago Coutinho', 'Faro'),
             ('PDL', 'João Paulo II', 'Ponta Delgada')
-        ]
-        cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", aeroportos_iniciais)
+        ])
 
-    # Inserir aviões iniciais
     cursor.execute("SELECT COUNT(*) FROM avioes")
     if cursor.fetchone()[0] == 0:
-        avioes_iniciais = [
-            ('Airbus A320', 150),
-            ('Boeing 737', 180),
-            ('Embraer E195', 118),
-            ('ATR 72', 70)
-        ]
-        cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", avioes_iniciais)
+        cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", [
+            ('Airbus A320', 150), ('Boeing 737', 180),
+            ('Embraer E195', 118), ('ATR 72', 70)
+        ])
     
     conn.commit()
     conn.close()
+
+# --- FUNÇÕES DE CONSULTA BASE ---
+def obter_companhias():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM companhias ORDER BY nome")
+    resultado = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in resultado]
 
 def obter_aeroportos():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM aeroportos ORDER BY cidade")
-    aeroportos = cursor.fetchall()
+    resultado = cursor.fetchall()
     conn.close()
-    return aeroportos
+    return [dict(r) for r in resultado]
 
 def obter_avioes():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM avioes ORDER BY capacidade DESC")
-    avioes = cursor.fetchall()
+    resultado = cursor.fetchall()
     conn.close()
-    return avioes
+    return [dict(r) for r in resultado]
 
+# --- FUNÇÕES DE ROTAS (NOVAS) ---
+def obter_rotas():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT r.numero_rota, r.companhia_sigla, c.nome as companhia_nome,
+               r.origem_sigla, o.cidade as origem_cidade,
+               r.destino_sigla, d.cidade as destino_cidade
+        FROM rotas r
+        JOIN companhias c ON r.companhia_sigla = c.sigla
+        JOIN aeroportos o ON r.origem_sigla = o.sigla
+        JOIN aeroportos d ON r.destino_sigla = d.sigla
+    ''')
+    resultado = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in resultado]
+
+def rota_existe(numero_rota):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM rotas WHERE numero_rota = ?", (numero_rota,))
+    existe = cursor.fetchone() is not None
+    conn.close()
+    return existe
+
+def adicionar_rota_db(numero_rota, companhia_sigla, origem_sigla, destino_sigla):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO rotas (numero_rota, companhia_sigla, origem_sigla, destino_sigla)
+        VALUES (?, ?, ?, ?)
+    ''', (numero_rota, companhia_sigla, origem_sigla, destino_sigla))
+    conn.commit()
+    conn.close()
+
+# --- FUNÇÕES DE VOOS ---
 def obter_voos():
     conn = conectar()
     cursor = conn.cursor()
-    # JOIN agora inclui a tabela de aviões para sabermos a capacidade
     cursor.execute('''
-        SELECT v.numero_voo, v.estado, v.aviao_modelo,
+        SELECT v.id as voo_id, v.estado, v.aviao_modelo,
+               r.numero_rota, c.nome as companhia_nome,
                a.capacidade,
                o.nome as origem_nome, o.sigla as origem_sigla, o.cidade as origem_cidade,
-               d.nome as destino_nome, d.sigla as destino_sigla, d.cidade as destino_cidade
+               d.nome as destino_nome, d.sigla as destino_sigla, d.cidade as destino_cidade,
+               COUNT(p.id) as total_passageiros
         FROM voos v
-        JOIN aeroportos o ON v.origem_sigla = o.sigla
-        JOIN aeroportos d ON v.destino_sigla = d.sigla
+        JOIN rotas r ON v.numero_rota = r.numero_rota
+        JOIN companhias c ON r.companhia_sigla = c.sigla
+        JOIN aeroportos o ON r.origem_sigla = o.sigla
+        JOIN aeroportos d ON r.destino_sigla = d.sigla
         JOIN avioes a ON v.aviao_modelo = a.modelo
-    ''')
-    voos = cursor.fetchall()
-    
-    voos_completos = []
-    for v in voos:
-        v_dict = dict(v)
-        cursor.execute("SELECT COUNT(*) as total FROM passageiros WHERE voo_numero = ?", (v['numero_voo'],))
-        v_dict['total_passageiros'] = cursor.fetchone()['total']
-        voos_completos.append(v_dict)
-        
+        LEFT JOIN passageiros p ON v.id = p.voo_id
+        GROUP BY v.id
+    ''')  # A correção está na linha do LEFT JOIN acima (v.id em vez de v.voo_id)
+    resultado = cursor.fetchall()
     conn.close()
-    return voos_completos
+    return [dict(r) for r in resultado]
 
 def voo_existe(numero_voo):
     conn = conectar()
@@ -131,12 +192,34 @@ def voo_existe(numero_voo):
     conn.close()
     return existe
 
-def adicionar_voo_db(numero, origem_sigla, destino_sigla, aviao_modelo, estado="Programado"):
+def adicionar_voo_db(numero_rota, aviao_modelo, estado="Programado"):
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO voos (numero_voo, origem_sigla, destino_sigla, aviao_modelo, estado)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (numero, origem_sigla, destino_sigla, aviao_modelo, estado))
+        INSERT INTO voos (numero_rota, aviao_modelo, estado)
+        VALUES (?, ?, ?)
+    ''', (numero_rota, aviao_modelo, estado))
+    conn.commit()
+    conn.close()
+
+def atualizar_estado_voo_db(voo_id, novo_estado):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE voos 
+        SET estado = ? 
+        WHERE id = ?
+    ''', (novo_estado, voo_id))
+    conn.commit()
+    conn.close()
+
+# --- FUNÇÕES DE PASSAGEIROS ---
+def adicionar_passageiro_db(voo_id, nome):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO passageiros (voo_id, nome)
+        VALUES (?, ?)
+    ''', (voo_id, nome))
     conn.commit()
     conn.close()

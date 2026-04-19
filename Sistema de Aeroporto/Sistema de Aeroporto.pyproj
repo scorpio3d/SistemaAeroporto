@@ -22,11 +22,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\database.py" />
+    <Compile Include="src\gerar_dados.py" />
+    <Compile Include="src\gui.py" />
     <Compile Include="src\main.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
     <Folder Include="src\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="data\aeroporto.db" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
