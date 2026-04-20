@@ -5,6 +5,7 @@ import json
 DB_PATH = os.path.join('data', 'voos.db')
 JSON_AEROPORTOS = os.path.join('data', 'airports.json')
 JSON_AVIOES = os.path.join('data', 'airplanes.json')
+JSON_COMPANHIAS = os.path.join( 'data', 'aircompanies.json')
 
 def conectar():
     os.makedirs('data', exist_ok=True)
@@ -77,14 +78,28 @@ def inicializar_bd():
             FOREIGN KEY (voo_id) REFERENCES voos (id)
         )
     ''')
-
     # --- INSERÇÃO DE COMPANHIAS ---
     cursor.execute("SELECT COUNT(*) FROM companhias")
     if cursor.fetchone()[0] == 0:
-        cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", [
-            ('TP', 'TAP Air Portugal'), ('FR', 'Ryanair'),
-            ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
-        ])
+        if os.path.exists(JSON_COMPANHIAS):
+            try:
+                with open(JSON_COMPANHIAS, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
+                    cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", companhias_lista)
+                    print(f"✅ {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
+            except Exception as e:
+                print(f"❌ Erro ao ler JSON de companhias: {e}")
+        else:
+            print(f"⚠️ Ficheiro {JSON_COMPANHIAS} não encontrado.")
+
+    # --- INSERÇÃO DE COMPANHIAS (PS: Código antigo) ---
+    #cursor.execute("SELECT COUNT(*) FROM companhias")
+    #if cursor.fetchone()[0] == 0:
+    #    cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", [
+    #        ('TP', 'TAP Air Portugal'), ('FR', 'Ryanair'),
+    #        ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
+    #    ])
     
     # --- INSERÇÃO DE AEROPORTOS (JSON) ---
     cursor.execute("SELECT COUNT(*) FROM aeroportos")

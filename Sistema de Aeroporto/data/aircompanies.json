@@ -1,0 +1,50 @@
+[
+  {
+    "sigla": "TP",
+    "nome": "TAP Air Portugal"
+  },
+  {
+    "sigla": "FR",
+    "nome": "Ryanair"
+  },
+  {
+    "sigla": "U2",
+    "nome": "EasyJet"
+  },
+  {
+    "sigla": "S4",
+    "nome": "SATA Azores Airlines"
+  },
+  {
+    "sigla": "LH",
+    "nome": "Lufthansa"
+  },
+  {
+    "sigla": "AF",
+    "nome": "Air France"
+  },
+  {
+    "sigla": "BA",
+    "nome": "British Airways"
+  },
+  {
+    "sigla": "IB",
+    "nome": "Iberia"
+  },
+  {
+    "sigla": "EK",
+    "nome": "Emirates"
+  },
+  {
+    "sigla": "DL",
+    "nome": "Delta Air Lines"
+  },
+  {
+    "sigla": "W6",
+    "nome": "Wizz Air"
+  },
+  {
+    "sigla": "AA",
+    "nome": "American Airlines"
+  }
+]

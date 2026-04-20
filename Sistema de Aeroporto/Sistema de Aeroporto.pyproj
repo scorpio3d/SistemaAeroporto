@@ -31,6 +31,7 @@
     <Folder Include="src\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\aircompanies.json" />
     <Content Include="data\airports.json" />
     <Content Include="data\airplanes.json" />
   </ItemGroup>
