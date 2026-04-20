@@ -1,0 +1,132 @@
+[
+  {
+    "sigla": "LIS",
+    "nome": "Humberto Delgado",
+    "cidade": "Lisboa"
+  },
+  {
+    "sigla": "OPO",
+    "nome": "Francisco Sá Carneiro",
+    "cidade": "Porto"
+  },
+  {
+    "sigla": "FAO",
+    "nome": "Gago Coutinho",
+    "cidade": "Faro"
+  },
+  {
+    "sigla": "FNC",
+    "nome": "Cristiano Ronaldo",
+    "cidade": "Funchal"
+  },
+  {
+    "sigla": "PDL",
+    "nome": "João Paulo II",
+    "cidade": "Ponta Delgada"
+  },
+  {
+    "sigla": "MAD",
+    "nome": "Adolfo Suárez Madrid-Barajas",
+    "cidade": "Madrid"
+  },
+  {
+    "sigla": "BCN",
+    "nome": "Josep Tarradellas Barcelona-El Prat",
+    "cidade": "Barcelona"
+  },
+  {
+    "sigla": "LHR",
+    "nome": "Heathrow",
+    "cidade": "Londres"
+  },
+  {
+    "sigla": "CDG",
+    "nome": "Charles de Gaulle",
+    "cidade": "Paris"
+  },
+  {
+    "sigla": "FRA",
+    "nome": "Frankfurt am Main",
+    "cidade": "Frankfurt"
+  },
+  {
+    "sigla": "AMS",
+    "nome": "Schiphol",
+    "cidade": "Amesterdão"
+  },
+  {
+    "sigla": "FCO",
+    "nome": "Leonardo da Vinci-Fiumicino",
+    "cidade": "Roma"
+  },
+  {
+    "sigla": "ZRH",
+    "nome": "Zürich Flughafen",
+    "cidade": "Zurique"
+  },
+  {
+    "sigla": "JFK",
+    "nome": "John F. Kennedy International",
+    "cidade": "Nova Iorque"
+  },
+  {
+    "sigla": "LAX",
+    "nome": "Los Angeles International",
+    "cidade": "Los Angeles"
+  },
+  {
+    "sigla": "ORD",
+    "nome": "O'Hare International",
+    "cidade": "Chicago"
+  },
+  {
+    "sigla": "MIA",
+    "nome": "Miami International",
+    "cidade": "Miami"
+  },
+  {
+    "sigla": "YYZ",
+    "nome": "Toronto Pearson International",
+    "cidade": "Toronto"
+  },
+  {
+    "sigla": "MEX",
+    "nome": "Benito Juárez International",
+    "cidade": "Cidade do México"
+  },
+  {
+    "sigla": "GRU",
+    "nome": "Guarulhos - Governador André Franco Montoro",
+    "cidade": "São Paulo"
+  },
+  {
+    "sigla": "GIG",
+    "nome": "Galeão - Antonio Carlos Jobim",
+    "cidade": "Rio de Janeiro"
+  },
+  {
+    "sigla": "BSB",
+    "nome": "Presidente Juscelino Kubitschek",
+    "cidade": "Brasília"
+  },
+  {
+    "sigla": "EZE",
+    "nome": "Ministro Pistarini International",
+    "cidade": "Buenos Aires"
+  },
+  {
+    "sigla": "BOG",
+    "nome": "El Dorado International",
+    "cidade": "Bogotá"
+  },
+  {
+    "sigla": "SCL",
+    "nome": "Arturo Merino Benítez",
+    "cidade": "Santiago do Chile"
+  },
+  {
+    "sigla": "LIM",
+    "nome": "Jorge Chávez International",
+    "cidade": "Lima"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "modelo": "Airbus A319",
+    "capacidade": 144
+  },
+  {
+    "modelo": "Airbus A320neo",
+    "capacidade": 180
+  },
+  {
+    "modelo": "Airbus A321neo",
+    "capacidade": 220
+  },
+  {
+    "modelo": "Airbus A330-900neo",
+    "capacidade": 298
+  },
+  {
+    "modelo": "Airbus A350-900",
+    "capacidade": 325
+  },
+  {
+    "modelo": "Boeing 737-800",
+    "capacidade": 189
+  },
+  {
+    "modelo": "Boeing 737 MAX 8",
+    "capacidade": 197
+  },
+  {
+    "modelo": "Boeing 777-300ER",
+    "capacidade": 396
+  },
+  {
+    "modelo": "Boeing 787-9 Dreamliner",
+    "capacidade": 290
+  },
+  {
+    "modelo": "Embraer E190-E2",
+    "capacidade": 106
+  },
+  {
+    "modelo": "Embraer E195-E2",
+    "capacidade": 132
+  },
+  {
+    "modelo": "ATR 72-600",
+    "capacidade": 72
+  },
+  {
+    "modelo": "Bombardier CRJ-900",
+    "capacidade": 90
+  },
+  {
+    "modelo": "Dash 8-Q400",
+    "capacidade": 78
+  }
+]

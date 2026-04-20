@@ -1,7 +1,10 @@
 import sqlite3
 import os
+import json
 
-DB_PATH = os.path.join('data', 'aeroporto.db')
+DB_PATH = os.path.join('data', 'voos.db')
+JSON_AEROPORTOS = os.path.join('data', 'airports.json')
+JSON_AVIOES = os.path.join('data', 'airplanes.json')
 
 def conectar():
     os.makedirs('data', exist_ok=True)
@@ -39,7 +42,7 @@ def inicializar_bd():
         )
     ''')
 
-    # 4. Tabela de Rotas (NOVA - Define o trajeto genérico, ex: TP102 de LIS para OPO)
+    # 4. Tabela de Rotas
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS rotas (
             numero_rota TEXT PRIMARY KEY,
@@ -52,7 +55,7 @@ def inicializar_bd():
         )
     ''')
     
-# 5. Tabela de Voos (COM DATA E HORA)
+    # 5. Tabela de Voos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS voos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +78,7 @@ def inicializar_bd():
         )
     ''')
 
-    # Inserir dados pré-definidos caso as tabelas estejam vazias
+    # --- INSERÇÃO DE COMPANHIAS ---
     cursor.execute("SELECT COUNT(*) FROM companhias")
     if cursor.fetchone()[0] == 0:
         cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", [
@@ -83,20 +86,48 @@ def inicializar_bd():
             ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
         ])
     
+    # --- INSERÇÃO DE AEROPORTOS (JSON + CÓDIGO ANTIGO COMENTADO) ---
     cursor.execute("SELECT COUNT(*) FROM aeroportos")
     if cursor.fetchone()[0] == 0:
-        cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", [
-            ('LIS', 'Humberto Delgado', 'Lisboa'), ('OPO', 'Francisco Sá Carneiro', 'Porto'),
-            ('FNC', 'Cristiano Ronaldo', 'Funchal'), ('FAO', 'Gago Coutinho', 'Faro'),
-            ('PDL', 'João Paulo II', 'Ponta Delgada')
-        ])
+        if os.path.exists(JSON_AEROPORTOS):
+            try:
+                with open(JSON_AEROPORTOS, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    aeroportos_lista = [(a['sigla'], a['nome'], a['cidade']) for a in dados_json]
+                    cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", aeroportos_lista)
+                    print(f"✅ {len(aeroportos_lista)} aeroportos carregados de {JSON_AEROPORTOS}")
+            except Exception as e:
+                print(f"❌ Erro ao ler JSON de aeroportos: {e}")
+        else:
+            print(f"⚠️ Ficheiro {JSON_AEROPORTOS} não encontrado.")
+            
+        # --- CÓDIGO ANTIGO COMENTADO ---
+        # cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", [
+        #     ('LIS', 'Humberto Delgado', 'Lisboa'), ('OPO', 'Francisco Sá Carneiro', 'Porto'),
+        #     ('FNC', 'Cristiano Ronaldo', 'Funchal'), ('FAO', 'Gago Coutinho', 'Faro'),
+        #     ('PDL', 'João Paulo II', 'Ponta Delgada')
+        # ])
 
+    # --- INSERÇÃO DE AVIÕES (JSON + CÓDIGO ANTIGO COMENTADO) ---
     cursor.execute("SELECT COUNT(*) FROM avioes")
     if cursor.fetchone()[0] == 0:
-        cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", [
-            ('Airbus A320', 150), ('Boeing 737', 180),
-            ('Embraer E195', 118), ('ATR 72', 70)
-        ])
+        if os.path.exists(JSON_AVIOES):
+            try:
+                with open(JSON_AVIOES, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    avioes_lista = [(av['modelo'], av['capacidade']) for av in dados_json]
+                    cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", avioes_lista)
+                    print(f"✅ {len(avioes_lista)} aviões carregados de {JSON_AVIOES}")
+            except Exception as e:
+                print(f"❌ Erro ao ler JSON de aviões: {e}")
+        else:
+             print(f"⚠️ Ficheiro {JSON_AVIOES} não encontrado.")
+
+        # --- CÓDIGO ANTIGO COMENTADO ---
+        # cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", [
+        #     ('Airbus A320', 150), ('Boeing 737', 180),
+        #     ('Embraer E195', 118), ('ATR 72', 70)
+        # ])
     
     conn.commit()
     conn.close()
@@ -181,11 +212,11 @@ def obter_voos():
         LEFT JOIN passageiros p ON v.id = p.voo_id
         GROUP BY v.id
         ORDER BY v.data_hora ASC
-    ''') # Adicionei também o ORDER BY no final para organizar cronologicamente!
+    ''')
     resultado = cursor.fetchall()
     conn.close()
     return [dict(r) for r in resultado]
-        # Manifesto passageiros
+
 def obter_passageiros_voo(voo_id):
     conn = conectar()
     cursor = conn.cursor()

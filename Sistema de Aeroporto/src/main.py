@@ -19,16 +19,17 @@ def listar_voos_ui():
     print("4. Por Rota")
     
     escolha = input("Escolha como ordenar (Enter para padrão): ")
-    
+
     # Lógica de ordenação em Python
-    if escolha == "2":
-        voos.sort(key=lambda x: x['destino_cidade'])
-    elif escolha == "3":
-        voos.sort(key=lambda x: x['estado'])
-    elif escolha == "4":
-        voos.sort(key=lambda x: x['numero_rota'])
-    else:
-        voos.sort(key=lambda x: x['data_hora'])
+    match escolha:
+        case "2":
+            voos.sort(key=lambda x: x['destino_cidade'])
+        case "3":
+            voos.sort(key=lambda x: x['estado'])
+        case "4":
+            voos.sort(key=lambda x: x['numero_rota'])
+        case _:
+            voos.sort(key=lambda x: x['data_hora'])
 
     print("\n" + "="*65)
     print(" 🛫 PAINEL DE VOOS 🛬")
@@ -89,7 +90,7 @@ def selecionar_rota():
             return num
         print("❌ Erro: Rota inválida.")
 
-# Reutilizamos as funções de seleção anteriores (simplificadas aqui)
+
 def selecionar_companhia():
     comps = obter_companhias()
     for c in comps: print(f" - {c['sigla']}: {c['nome']}")
