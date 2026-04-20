@@ -86,7 +86,7 @@ def inicializar_bd():
             ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
         ])
     
-    # --- INSERÇÃO DE AEROPORTOS (JSON + CÓDIGO ANTIGO COMENTADO) ---
+    # --- INSERÇÃO DE AEROPORTOS (JSON) ---
     cursor.execute("SELECT COUNT(*) FROM aeroportos")
     if cursor.fetchone()[0] == 0:
         if os.path.exists(JSON_AEROPORTOS):
@@ -101,14 +101,14 @@ def inicializar_bd():
         else:
             print(f"⚠️ Ficheiro {JSON_AEROPORTOS} não encontrado.")
             
-        # --- CÓDIGO ANTIGO COMENTADO ---
+        # --- INSERÇÃO DE AEROPORTOS (PS: Código antigo)---
         # cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", [
         #     ('LIS', 'Humberto Delgado', 'Lisboa'), ('OPO', 'Francisco Sá Carneiro', 'Porto'),
         #     ('FNC', 'Cristiano Ronaldo', 'Funchal'), ('FAO', 'Gago Coutinho', 'Faro'),
         #     ('PDL', 'João Paulo II', 'Ponta Delgada')
         # ])
 
-    # --- INSERÇÃO DE AVIÕES (JSON + CÓDIGO ANTIGO COMENTADO) ---
+    # --- INSERÇÃO DE AVIÕES (JSON) ---
     cursor.execute("SELECT COUNT(*) FROM avioes")
     if cursor.fetchone()[0] == 0:
         if os.path.exists(JSON_AVIOES):
@@ -123,7 +123,7 @@ def inicializar_bd():
         else:
              print(f"⚠️ Ficheiro {JSON_AVIOES} não encontrado.")
 
-        # --- CÓDIGO ANTIGO COMENTADO ---
+        # --- INSERÇÃO de AVIÕES (PS:Código antigo) ---
         # cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", [
         #     ('Airbus A320', 150), ('Boeing 737', 180),
         #     ('Embraer E195', 118), ('ATR 72', 70)
