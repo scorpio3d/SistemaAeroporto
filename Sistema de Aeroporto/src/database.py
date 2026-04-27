@@ -79,7 +79,7 @@ def inicializar_bd():
         )
     ''')
 
-    # --- INSERÇÃO DE COMPANHIAS ---
+    #INSERÇÃO DE COMPANHIAS
     cursor.execute("SELECT COUNT(*) FROM companhias")
 
     if os.path.exists(JSON_COMPANHIAS):
@@ -104,7 +104,7 @@ def inicializar_bd():
     else:
         print(f"⚠️ Ficheiro {JSON_COMPANHIAS} não encontrado.")
 
-    # --- INSERÇÃO DE AEROPORTOS (JSON) ---
+    #INSERÇÃO DE AEROPORTOS (JSON)
     cursor.execute("SELECT COUNT(*) FROM aeroportos")
 
     if os.path.exists(JSON_AEROPORTOS):
@@ -130,7 +130,7 @@ def inicializar_bd():
     else:
         print(f"⚠️ Ficheiro {JSON_AEROPORTOS} não encontrado.")
 
-    # --- INSERÇÃO DE AVIÕES (JSON) ---
+    #INSERÇÃO DE AVIÕES (JSON)
     cursor.execute("SELECT COUNT(*) FROM avioes")
     if os.path.exists(JSON_AVIOES):
         try:
@@ -157,7 +157,7 @@ def inicializar_bd():
     conn.commit()
     conn.close()
 
-# --- FUNÇÕES DE CONSULTA BASE ---
+#FUNÇÕES DE CONSULTA BASE
 def obter_companhias():
     conn = conectar()
     cursor = conn.cursor()
@@ -182,7 +182,7 @@ def obter_avioes():
     conn.close()
     return [dict(r) for r in resultado]
 
-# --- FUNÇÕES DE ROTAS (NOVAS) ---
+#FUNÇÕES DE ROTAS (NOVAS)
 def obter_rotas():
     conn = conectar()
     cursor = conn.cursor()
@@ -217,7 +217,7 @@ def adicionar_rota_db(numero_rota, companhia_sigla, origem_sigla, destino_sigla)
     conn.commit()
     conn.close()
 
-# --- FUNÇÕES DE VOOS ---
+#FUNÇÕES DE VOOS
 def obter_voos():
     conn = conectar()
     cursor = conn.cursor()
@@ -291,7 +291,7 @@ def atualizar_estado_voo_db(voo_id, novo_estado):
     conn.commit()
     conn.close()
 
-# --- FUNÇÕES DE PASSAGEIROS ---
+#FUNÇÕES DE PASSAGEIROS
 def adicionar_passageiro_db(voo_id, nome):
     conn = conectar()
     cursor = conn.cursor()
