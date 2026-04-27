@@ -5,7 +5,7 @@ from database import (
     adicionar_rota_db, rota_existe, adicionar_voo_db, adicionar_passageiro_db, obter_voos
 )
 
-def gerar_dados_teste(qtd_rotas=20, qtd_voos=5, qtd_passageiros=500):
+def gerar_dados_teste(qtd_rotas=100, qtd_voos=200, qtd_passageiros=0):
     # 1. Garantir que as tabelas existem
     inicializar_bd()
     

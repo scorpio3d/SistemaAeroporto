@@ -78,71 +78,81 @@ def inicializar_bd():
             FOREIGN KEY (voo_id) REFERENCES voos (id)
         )
     ''')
+
     # --- INSERÇÃO DE COMPANHIAS ---
     cursor.execute("SELECT COUNT(*) FROM companhias")
-    if cursor.fetchone()[0] == 0:
-        if os.path.exists(JSON_COMPANHIAS):
-            try:
-                with open(JSON_COMPANHIAS, 'r', encoding='utf-8') as f:
-                    dados_json = json.load(f)
-                    companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
-                    cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", companhias_lista)
-                    print(f"✅ {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
-            except Exception as e:
-                print(f"❌ Erro ao ler JSON de companhias: {e}")
-        else:
-            print(f"⚠️ Ficheiro {JSON_COMPANHIAS} não encontrado.")
 
-    # --- INSERÇÃO DE COMPANHIAS (PS: Código antigo) ---
-    #cursor.execute("SELECT COUNT(*) FROM companhias")
-    #if cursor.fetchone()[0] == 0:
-    #    cursor.executemany("INSERT INTO companhias (sigla, nome) VALUES (?, ?)", [
-    #        ('TP', 'TAP Air Portugal'), ('FR', 'Ryanair'),
-    #        ('U2', 'EasyJet'), ('S4', 'SATA Azores Airlines')
-    #    ])
-    
+    if os.path.exists(JSON_COMPANHIAS):
+        try:
+            with open(JSON_COMPANHIAS, 'r', encoding='utf-8') as f:
+                dados_json = json.load(f)
+                companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
+               
+                #Insere ou atualiza as companhias usando ON CONFLICT para evitar duplicados e garantir a atualização do nome sem haver conflitos 
+                # de foreign key e sem ter de apagar e reinserir os dados, o que poderia causar perda de dados relacionados (ex: rotas associadas a companhias)
+               
+                cursor.executemany('''
+                    INSERT INTO companhias (sigla, nome) 
+                    VALUES (?, ?) 
+                    ON CONFLICT(sigla) 
+                    DO UPDATE SET nome = excluded.nome
+                ''', companhias_lista)
+
+                print(f"✅ Sincronizadas {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
+        except Exception as e:
+            print(f"❌ Erro ao ler JSON de companhias: {e}")
+    else:
+        print(f"⚠️ Ficheiro {JSON_COMPANHIAS} não encontrado.")
+
     # --- INSERÇÃO DE AEROPORTOS (JSON) ---
     cursor.execute("SELECT COUNT(*) FROM aeroportos")
-    if cursor.fetchone()[0] == 0:
-        if os.path.exists(JSON_AEROPORTOS):
-            try:
-                with open(JSON_AEROPORTOS, 'r', encoding='utf-8') as f:
-                    dados_json = json.load(f)
-                    aeroportos_lista = [(a['sigla'], a['nome'], a['cidade']) for a in dados_json]
-                    cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", aeroportos_lista)
-                    print(f"✅ {len(aeroportos_lista)} aeroportos carregados de {JSON_AEROPORTOS}")
-            except Exception as e:
-                print(f"❌ Erro ao ler JSON de aeroportos: {e}")
-        else:
-            print(f"⚠️ Ficheiro {JSON_AEROPORTOS} não encontrado.")
-            
-        # --- INSERÇÃO DE AEROPORTOS (PS: Código antigo)---
-        # cursor.executemany("INSERT INTO aeroportos (sigla, nome, cidade) VALUES (?, ?, ?)", [
-        #     ('LIS', 'Humberto Delgado', 'Lisboa'), ('OPO', 'Francisco Sá Carneiro', 'Porto'),
-        #     ('FNC', 'Cristiano Ronaldo', 'Funchal'), ('FAO', 'Gago Coutinho', 'Faro'),
-        #     ('PDL', 'João Paulo II', 'Ponta Delgada')
-        # ])
+
+    if os.path.exists(JSON_AEROPORTOS):
+        try:
+            with open(JSON_AEROPORTOS, 'r', encoding='utf-8') as f:
+                dados_json = json.load(f)
+                aeroportos_lista = [(a['sigla'], a['nome'], a['cidade']) for a in dados_json]
+                
+                #Insere ou atualiza os aeroportos usando ON CONFLICT para evitar duplicados e garantir a atualização do nome e cidade sem haver conflitos 
+                # de foreign key e sem ter de apagar e reinserir os dados, o que poderia causar perda de dados relacionados (ex: rotas associadas a aeroportos)
+                
+                cursor.executemany('''
+                    INSERT INTO aeroportos (sigla, nome, cidade) 
+                    VALUES (?, ?, ?) 
+                    ON CONFLICT(sigla) 
+                    DO UPDATE SET 
+                        nome = excluded.nome,
+                        cidade = excluded.cidade
+                ''', aeroportos_lista)
+                print(f"✅ Sincronizados {len(aeroportos_lista)} aeroportos carregados de {JSON_AEROPORTOS}")
+        except Exception as e:
+            print(f"❌ Erro ao ler JSON de aeroportos: {e}")
+    else:
+        print(f"⚠️ Ficheiro {JSON_AEROPORTOS} não encontrado.")
 
     # --- INSERÇÃO DE AVIÕES (JSON) ---
     cursor.execute("SELECT COUNT(*) FROM avioes")
-    if cursor.fetchone()[0] == 0:
-        if os.path.exists(JSON_AVIOES):
-            try:
-                with open(JSON_AVIOES, 'r', encoding='utf-8') as f:
-                    dados_json = json.load(f)
-                    avioes_lista = [(av['modelo'], av['capacidade']) for av in dados_json]
-                    cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", avioes_lista)
-                    print(f"✅ {len(avioes_lista)} aviões carregados de {JSON_AVIOES}")
-            except Exception as e:
-                print(f"❌ Erro ao ler JSON de aviões: {e}")
-        else:
-             print(f"⚠️ Ficheiro {JSON_AVIOES} não encontrado.")
+    if os.path.exists(JSON_AVIOES):
+        try:
+            with open(JSON_AVIOES, 'r', encoding='utf-8') as f:
+                dados_json = json.load(f)
+                avioes_lista = [(av['modelo'], av['capacidade']) for av in dados_json]
+                
+                #Insere ou atualiza os aviões usando ON CONFLICT para evitar duplicados e garantir a atualização da capacidade sem haver conflitos
+                # de foreign key e sem ter de apagar e reinserir os dados, o que poderia causar perda de dados relacionados (ex: voos associadas a aviões)
 
-        # --- INSERÇÃO de AVIÕES (PS:Código antigo) ---
-        # cursor.executemany("INSERT INTO avioes (modelo, capacidade) VALUES (?, ?)", [
-        #     ('Airbus A320', 150), ('Boeing 737', 180),
-        #     ('Embraer E195', 118), ('ATR 72', 70)
-        # ])
+                cursor.executemany('''
+                    INSERT INTO avioes (modelo, capacidade) 
+                    VALUES (?, ?) 
+                    ON CONFLICT(modelo) 
+                    DO UPDATE SET capacidade = excluded.capacidade
+                ''', avioes_lista)
+
+                print(f"✅ Sincronizados {len(avioes_lista)} aviões carregados de {JSON_AVIOES}")
+        except Exception as e:
+            print(f"❌ Erro ao ler JSON de aviões: {e}")
+    else:
+            print(f"⚠️ Ficheiro {JSON_AVIOES} não encontrado.")
     
     conn.commit()
     conn.close()
@@ -261,11 +271,23 @@ def adicionar_voo_db(numero_rota, aviao_modelo, data_hora, estado="Programado"):
 def atualizar_estado_voo_db(voo_id, novo_estado):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute('''
-        UPDATE voos 
-        SET estado = ? 
-        WHERE id = ?
-    ''', (novo_estado, voo_id))
+    
+    if novo_estado == "Atrasado":
+        # Atualiza o estado e adiciona 1 hora à coluna data_hora
+        cursor.execute('''
+            UPDATE voos 
+            SET estado = ?, 
+                data_hora = datetime(data_hora, '+1 hour')
+            WHERE id = ?
+        ''', (novo_estado, voo_id))
+    else:
+        # Atualiza apenas o estado para as restantes opções
+        cursor.execute('''
+            UPDATE voos 
+            SET estado = ? 
+            WHERE id = ?
+        ''', (novo_estado, voo_id))
+        
     conn.commit()
     conn.close()
 
