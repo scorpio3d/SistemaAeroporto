@@ -88,9 +88,6 @@ def inicializar_bd():
                 dados_json = json.load(f)
                 companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
                
-                #Insere ou atualiza as companhias usando ON CONFLICT para evitar duplicados e garantir a atualização do nome sem haver conflitos 
-                # de foreign key e sem ter de apagar e reinserir os dados, o que poderia causar perda de dados relacionados (ex: rotas associadas a companhias)
-               
                 cursor.executemany('''
                     INSERT INTO companhias (sigla, nome) 
                     VALUES (?, ?) 
@@ -98,14 +95,11 @@ def inicializar_bd():
                     DO UPDATE SET nome = excluded.nome
                 ''', companhias_lista)
 
-                print(f"✅ Sincronizadas {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
+                print(f"Sincronizadas {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
         except Exception as e:
-            print(f"❌ Erro ao ler JSON de companhias: {e}")
+            print(f"Erro ao ler JSON de companhias: {e}")
     else:
-        print(f"⚠️ Ficheiro {JSON_COMPANHIAS} não encontrado.")
-
-    #INSERÇÃO DE AEROPORTOS (JSON)
-    cursor.execute("SELECT COUNT(*) FROM aeroportos")
+        print(f"Ficheiro {JSON_COMPANHIAS} não encontrado.")
 
     if os.path.exists(JSON_AEROPORTOS):
         try:
