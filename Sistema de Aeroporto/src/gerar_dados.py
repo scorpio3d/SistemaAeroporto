@@ -7,6 +7,7 @@ from database import (
 
 def gerar_dados_teste(qtd_rotas=100, qtd_voos=200, qtd_passageiros=0):
     # 1. Garantir que as tabelas existem
+
     inicializar_bd()
     
     aeroportos = [a['sigla'] for a in obter_aeroportos()]

@@ -1,20 +1,23 @@
-from ast import Return
 import sqlite3
 import os
 import json
 from contextlib import contextmanager
 
-DB_PATH = os.path.join('data', 'voos.db')
-JSON_AEROPORTOS = os.path.join('data', 'airports.json')
-JSON_AVIOES = os.path.join('data', 'airplanes.json')
-JSON_COMPANHIAS = os.path.join( 'data', 'aircompanies.json')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+os.makedirs(DATA_DIR, exist_ok=True)
+
+DB_PATH = os.path.join(DATA_DIR, 'voos.db')
+JSON_AEROPORTOS = os.path.join(DATA_DIR, 'airports.json')
+JSON_AVIOES = os.path.join(DATA_DIR, 'airplanes.json')
+JSON_COMPANHIAS = os.path.join(DATA_DIR, 'aircompanies.json')
 
 @contextmanager
 
 def db_session():
 
-    os.makedirs('data', exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row 
     conn.execute("PRAGMA foreign_keys = ON") 
 
@@ -92,67 +95,67 @@ def inicializar_bd():
             )
         ''')
 
-    #Sincronização DE COMPANHIAS (JSON)
-    if os.path.exists(JSON_COMPANHIAS):
-        try:
-            with open(JSON_COMPANHIAS, 'r', encoding='utf-8') as f:
-                dados_json = json.load(f)
-                companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
+        #Sincronização DE COMPANHIAS (JSON)
+        if os.path.exists(JSON_COMPANHIAS):
+            try:
+                with open(JSON_COMPANHIAS, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    companhias_lista = [(c['sigla'], c['nome']) for c in dados_json]
                
-                cursor.executemany('''
-                    INSERT INTO companhias (sigla, nome) 
-                    VALUES (?, ?) 
-                    ON CONFLICT(sigla) 
-                    DO UPDATE SET nome = excluded.nome
-                ''', companhias_lista)
+                    cursor.executemany('''
+                        INSERT INTO companhias (sigla, nome) 
+                        VALUES (?, ?) 
+                        ON CONFLICT(sigla) 
+                        DO UPDATE SET nome = excluded.nome
+                    ''', companhias_lista)
 
-                print(f"Sincronizadas {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
-        except Exception as e:
-            print(f"Erro ao ler JSON de companhias: {e}")
-    else:
-        print(f"Ficheiro {JSON_COMPANHIAS} não encontrado.")
+                    print(f"Sincronizadas {len(companhias_lista)} companhias carregadas de {JSON_COMPANHIAS}")
+            except Exception as e:
+                print(f"Erro ao ler JSON de companhias: {e}")
+        else:
+            print(f"Ficheiro {JSON_COMPANHIAS} não encontrado.")
 
-    #Sincronização DE AEROPORTOS (JSON)
-    if os.path.exists(JSON_AEROPORTOS):
-        try:
-            with open(JSON_AEROPORTOS, 'r', encoding='utf-8') as f:
-                dados_json = json.load(f)
-                aeroportos_lista = [(a['sigla'], a['nome'], a['cidade']) for a in dados_json]
+        #Sincronização DE AEROPORTOS (JSON)
+        if os.path.exists(JSON_AEROPORTOS):
+            try:
+                with open(JSON_AEROPORTOS, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    aeroportos_lista = [(a['sigla'], a['nome'], a['cidade']) for a in dados_json]
                 
-                cursor.executemany('''
-                    INSERT INTO aeroportos (sigla, nome, cidade) 
-                    VALUES (?, ?, ?) 
-                    ON CONFLICT(sigla) 
-                    DO UPDATE SET 
-                        nome = excluded.nome,
-                        cidade = excluded.cidade
-                ''', aeroportos_lista)
+                    cursor.executemany('''
+                        INSERT INTO aeroportos (sigla, nome, cidade) 
+                        VALUES (?, ?, ?) 
+                        ON CONFLICT(sigla) 
+                        DO UPDATE SET 
+                            nome = excluded.nome,
+                            cidade = excluded.cidade
+                    ''', aeroportos_lista)
 
-                print(f"Sincronizados {len(aeroportos_lista)} aeroportos carregados de {JSON_AEROPORTOS}")
-        except Exception as e:
-            print(f"Erro ao ler JSON de aeroportos: {e}")
-    else:
-        print(f"Ficheiro {JSON_AEROPORTOS} não encontrado.")
+                    print(f"Sincronizados {len(aeroportos_lista)} aeroportos carregados de {JSON_AEROPORTOS}")
+            except Exception as e:
+                print(f"Erro ao ler JSON de aeroportos: {e}")
+        else:
+            print(f"Ficheiro {JSON_AEROPORTOS} não encontrado.")
 
-    #Sincronização DE AVIÕES (JSON)
-    if os.path.exists(JSON_AVIOES):
-        try:
-            with open(JSON_AVIOES, 'r', encoding='utf-8') as f:
-                dados_json = json.load(f)
-                avioes_lista = [(av['modelo'], av['capacidade']) for av in dados_json]
+        #Sincronização DE AVIÕES (JSON)
+        if os.path.exists(JSON_AVIOES):
+            try:
+                with open(JSON_AVIOES, 'r', encoding='utf-8') as f:
+                    dados_json = json.load(f)
+                    avioes_lista = [(av['modelo'], av['capacidade']) for av in dados_json]
                 
-                cursor.executemany('''
-                    INSERT INTO avioes (modelo, capacidade) 
-                    VALUES (?, ?) 
-                    ON CONFLICT(modelo) 
-                    DO UPDATE SET capacidade = excluded.capacidade
-                ''', avioes_lista)
+                    cursor.executemany('''
+                        INSERT INTO avioes (modelo, capacidade) 
+                        VALUES (?, ?) 
+                        ON CONFLICT(modelo) 
+                        DO UPDATE SET capacidade = excluded.capacidade
+                    ''', avioes_lista)
 
-                print(f"Sincronizados {len(avioes_lista)} aviões carregados de {JSON_AVIOES}")
-        except Exception as e:
-            print(f"Erro ao ler JSON de aviões: {e}")
-    else:
-        print(f"Ficheiro {JSON_AVIOES} não encontrado.")
+                    print(f"Sincronizados {len(avioes_lista)} aviões carregados de {JSON_AVIOES}")
+            except Exception as e:
+                print(f"Erro ao ler JSON de aviões: {e}")
+        else:
+            print(f"Ficheiro {JSON_AVIOES} não encontrado.")
     
 
 #FUNÇÕES DE CONSULTA BASE
